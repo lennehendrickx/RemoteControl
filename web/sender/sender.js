@@ -8,28 +8,34 @@ angular.module('sender', ['socket', 'ngRoute'])
             }
         },
         controller : function($scope, socket) {
-            if (window.DeviceOrientationEvent) {
-                // gamma is the left-to-right tilt in degrees, where right is positive
-                // beta is the front-to-back tilt in degrees, where front is positive
-                // alpha is the compass direction the device is facing in degrees
-                window.addEventListener('deviceorientation', sendOrientation, false);
-            } else{
-                alert('Device orientation not supported in this browser.');
-            }
-
             $scope.room = socket.room;
-            function sendOrientation(orientationEvent) {
-                var orientation = {
-                    alpha: orientationEvent.alpha,
-                    beta: orientationEvent.beta,
-                    gamma: orientationEvent.gamma
-                }
-                $scope.orientation = orientation;
+
+            var orientationStream = Rx.DOM.fromEvent(window, 'deviceorientation')
+                         .map(function(orientationEvent) {
+                            return  {
+                                alpha: orientationEvent.alpha,
+                                beta: orientationEvent.beta,
+                                gamma: orientationEvent.gamma
+                            };
+                         })
+                         .sample(200)
+                         .distinctUntilChanged();
+
+            var subscription = orientationStream.subscribe(function(orientation) {
+                $scope.$apply(function() {
+                    $scope.orientation = orientation;
+                });
+
                 socket.emit('orientation', {
                     room : socket.room,
                     orientation: orientation
                 });
-            }
+            })
+
+            $scope.$on('$destroy', function() {
+                subscription.dispose();
+            });
+
         }
     }).otherwise('/')
 })
