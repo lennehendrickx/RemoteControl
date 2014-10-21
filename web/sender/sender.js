@@ -18,7 +18,7 @@ angular.module('sender', ['socket', 'ngRoute'])
                                 gamma: orientationEvent.gamma
                             };
                          })
-                         .sample(200)
+                         .sample(10)
                          .distinctUntilChanged();
 
             var subscription = orientationStream.subscribe(function(orientation) {

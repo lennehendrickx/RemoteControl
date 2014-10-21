@@ -17,4 +17,20 @@ angular.module('receiver', ['socket', 'ngRoute'])
             $scope.connect('1234');
         }
     }).otherwise('/')
+})
+.directive('orientation', function() {
+    return {
+        scope : {
+            orientation : '='
+        },
+        link : function(scope, element, attrs) {
+            scope.$watch('orientation', function(orientation) {
+                if(!orientation) return;
+
+                element.css('-webkit-transform', 'rotate(' + orientation.gamma + 'deg) rotate3d(1,0,0, ' + (orientation.beta * -1) + 'deg)');
+                element.css('-moz-transform', 'rotate(' + orientation.gamma + 'deg)');
+                element.css('transform', 'rotate(' + orientation.gamma + 'deg) rotate3d(1,0,0, ' + (orientation.beta * -1) + 'deg)');
+            });
+        }
+    }
 });
